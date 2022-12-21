@@ -20,16 +20,55 @@
         console.warn('Web Crypto API not supported');
       }
 
-      const ALGO_NAME = 'AES-GCM';
-      const iv = window.crypto.getRandomValues(new Uint8Array(12));
-      const superSecret = 'password';
+      const ALGO_NAME = 'ECDSA';
+      const ALGO_OPTIONS = {
+        name: ALGO_NAME,
+        hash: { name: 'SHA-384' },
+      };
+
+      const userId = window.crypto.randomUUID();
+
+      const userInfo = {
+        id: userId,
+        lastLogin: Date.now(),
+      };
 
       (async () => {
-        const key = await operations.generateKey(
-          { name: ALGO_NAME, length: 256 },
+        const { privateKey, publicKey } = await operations.generateKey(
+          {
+            name: ALGO_NAME,
+            namedCurve: 'P-384',
+          },
           false, // defines key as extractable, use false b/c we do not need to store it
-          ['encrypt', 'decrypt']
+          ['sign', 'verify']
         );
+
+        // input must be stringified and encoded to a buffer or TypedArray
+        const dataString = JSON.stringify(userInfo);
+        const encoder = new TextEncoder();
+        const encodedData = encoder.encode(dataString);
+
+        const signature = await operations.sign(
+          ALGO_OPTIONS,
+          privateKey,
+          encodedData
+        );
+
+        const isValid = await operations.verify(
+          ALGO_OPTIONS,
+          publicKey,
+          signature,
+          encodedData
+        );
+
+        if (isValid) {
+          const msg = 'Signing & verification successful!';
+          console.log(msg);
+          alert(msg);
+        } else {
+          console.error('Verification failed');
+          alert('Signature was invalid!');
+        }
       })();
     </script>
 
