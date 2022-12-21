@@ -23,14 +23,39 @@
       const ALGO_NAME = 'SHA-256';
       const passwordInput = 'sihtssuegrevenlluoy';
 
+      function bufferToHex(buffer) {
+        return Array.from(new Uint8Array(buffer))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+      }
+
       (async () => {
         // input must be encoded to a buffer or TypedArray
         const encoder = new TextEncoder();
         const passwordInputEncoded = encoder.encode(passwordInput);
 
-        const hash = await operations.digest(ALGO_NAME, passwordInputEncoded);
+        const hashBuffer = await operations.digest(
+          ALGO_NAME,
+          passwordInputEncoded
+        );
 
-        console.log(hash);
+        const hashString = bufferToHex(hashBuffer);
+
+        console.log(hashString);
+
+        // input must be encoded to a buffer or TypedArray
+        const augmentedPasswordInputEncoded = encoder.encode(
+          passwordInput + '1'
+        );
+
+        const augmentedHashBuffer = await operations.digest(
+          ALGO_NAME,
+          augmentedPasswordInputEncoded
+        );
+
+        const augmentedHashString = bufferToHex(augmentedHashBuffer);
+
+        console.log(augmentedHashString);
       })();
     </script>
 
