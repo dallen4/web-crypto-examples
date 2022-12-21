@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Web Crypto API Examples</title>
+  </head>
+  <body>
+    <script type="module">
+      import jwt from 'https://esm.sh/node-jsonwebtoken';
+      import { nanoid } from 'https://esm.sh/nanoid';
+
+      // initialize SubtleCrypto
+      let operations = window.crypto.subtle;
+
+      // Safari uses webkit prefix
+      if (!operations) operations = window.crypto.webkitSubtle;
+
+      // if webcrypto is not supported, notify the user
+      if (!operations) {
+        alert('Web Crypto is not supported on this browser');
+        console.warn('Web Crypto API not supported');
+      }
+
+      // utility methods
+
+      function generateId() {
+        return window.crypto.randomUUID();
+      }
+
+      function encodePayload(payload) {
+        const enc = new TextEncoder();
+        return enc.encode(payload);
+      }
+
+      function decodePayload(payload) {
+        const dec = new TextDecoder();
+        return dec.decode(payload);
+      }
+
+      async function encrypt(payload, key, iv) {
+        return operations.encrypt({ name: ALGO_NAME, iv }, key, payload);
+      }
+
+      async function decrypt(payload, key, iv) {
+        return operations.decrypt({ name: ALGO_NAME, iv }, key, payload);
+      }
+
+      async function sign() {}
+
+      async function verify() {}
+
+      async function hash() {}
+
+      async function validateHash() {}
+
+      // session state
+
+      let secretValue = '';
+      let keyValue;
+      let encryptedValue = '';
+      let decryptedValue = '';
+
+      const ALGO_NAME = 'AES-GCM';
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+      // session entities
+
+      const initCredsBtn = document.getElementById('init-creds-btn');
+      const encryptTokenBtn = document.getElementById('enc-token-btn');
+      const decryptTokenBtn = document.getElementById('dec-token-btn');
+
+      function getEncodedMessage() {
+        const textInput = document.getElementById('secret-input');
+
+        return encodePayload(textInput.value);
+      }
+
+      initCredsBtn.onclick = async () => {
+        try {
+          const key = await operations.generateKey(
+            { name: ALGO_NAME, length: 256 },
+            true,
+            ['encrypt', 'decrypt']
+          );
+
+          keyValue = key;
+        } catch (err) {
+          console.error(err);
+          alert('Error occurred during key generation!');
+          return;
+        }
+
+        document.getElementById('key-value').textContent = 'Generated';
+
+        secretValue = jwt.sign({ id: generateId() }, 'supersecretkey');
+
+        document.getElementById('token-value').textContent =
+          secretValue.toString();
+
+        encryptTokenBtn.disabled = false;
+      };
+
+      encryptTokenBtn.onclick = async () => {
+        const payload = getEncodedMessage();
+        try {
+          encryptedValue = await operations.encrypt(
+            { name: ALGO_NAME, iv },
+            keyValue,
+            payload
+          );
+
+          document.getElementById('encrypted-value').textContent =
+            decodePayload(encryptedValue);
+
+          decryptTokenBtn.disabled = false;
+        } catch (err) {
+          console.error(err);
+          alert('error occured during encryption!');
+        }
+      };
+
+      decryptTokenBtn.onclick = async () => {
+        try {
+          decryptedValue = await operations
+            .decrypt({ name: ALGO_NAME, iv }, keyValue, encryptedValue)
+            .then(decodePayload);
+
+          document.getElementById('plaintext-value').textContent =
+            decryptedValue;
+        } catch (err) {
+          console.error(err);
+          alert('error occured during decryption!');
+        }
+      };
+    </script>
+
+    <h1>Web Crypto API Examples</h1>
+
+    <h3>Encryption & Decryption</h3>
+
+    <div>
+      <p>Input Secret</p>
+      <input id="secret-input" />
+      <button id="init-creds-btn">Generate Credentials</button>
+      <p>token: <span id="token-value"></span></p>
+      <p>key: <span id="key-value"></span></p>
+    </div>
+    <div>
+      <p>Encryption</p>
+      <button id="enc-token-btn" disabled>Encrypt</button>
+      <p>encrypted: <span id="encrypted-value"></span></p>
+    </div>
+    <div>
+      <p>Decryption</p>
+      <button id="dec-token-btn" disabled>Decrypt</button>
+      <p>plaintext: <span id="plaintext-value"></span></p>
+    </div>
+
+    <h3>Signing & Verifying</h3>
+
+    <style>
+      .fade-in {
+        animation: fade 0.5s;
+      }
+
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </body>
+</html>

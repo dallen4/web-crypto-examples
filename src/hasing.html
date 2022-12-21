@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Hashing Example</title>
+  </head>
+  <body>
+    <script type="module">
+      // initialize SubtleCrypto
+      let operations = window.crypto.subtle;
+
+      // Safari uses webkit prefix
+      if (!operations) operations = window.crypto.webkitSubtle;
+
+      // if webcrypto is not supported, notify the user
+      if (!operations) {
+        alert('Web Crypto is not supported on this browser');
+        console.warn('Web Crypto API not supported');
+      }
+
+      const ALGO_NAME = 'AES-GCM';
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+      const superSecret = 'password';
+
+      (async () => {
+        const key = await operations.generateKey(
+          { name: ALGO_NAME, length: 256 },
+          false, // defines key as extractable, use false b/c we do not need to store it
+          ['encrypt', 'decrypt']
+        );
+      })();
+    </script>
+
+    <h1>Signing Example</h1>
+    <p>see console</p>
+  </body>
+</html>

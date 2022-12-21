@@ -1,0 +1,15 @@
+{
+  "name": "web-crypto-examples",
+  "version": "1.0.0",
+  "description": "Web Crypto API examples for article",
+  "main": "index.js",
+  "author": "Nieky Allen",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "http-server src/"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
