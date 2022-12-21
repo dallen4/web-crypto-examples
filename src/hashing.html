@@ -20,20 +20,21 @@
         console.warn('Web Crypto API not supported');
       }
 
-      const ALGO_NAME = 'AES-GCM';
-      const iv = window.crypto.getRandomValues(new Uint8Array(12));
-      const superSecret = 'password';
+      const ALGO_NAME = 'SHA-256';
+      const passwordInput = 'sihtssuegrevenlluoy';
 
       (async () => {
-        const key = await operations.generateKey(
-          { name: ALGO_NAME, length: 256 },
-          false, // defines key as extractable, use false b/c we do not need to store it
-          ['encrypt', 'decrypt']
-        );
+        // input must be encoded to a buffer or TypedArray
+        const encoder = new TextEncoder();
+        const passwordInputEncoded = encoder.encode(passwordInput);
+
+        const hash = await operations.digest(ALGO_NAME, passwordInputEncoded);
+
+        console.log(hash);
       })();
     </script>
 
-    <h1>Signing Example</h1>
+    <h1>Hashing Example</h1>
     <p>see console</p>
   </body>
 </html>
