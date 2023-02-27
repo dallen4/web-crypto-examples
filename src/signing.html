@@ -20,6 +20,12 @@
         console.warn('Web Crypto API not supported');
       }
 
+      function bufferToHex(buffer) {
+        return Array.from(new Uint8Array(buffer))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+      }
+
       const ALGO_NAME = 'ECDSA';
       const ALGO_OPTIONS = {
         name: ALGO_NAME,
@@ -43,6 +49,8 @@
           ['sign', 'verify']
         );
 
+        console.log('user data to sign: ', userInfo);
+
         // input must be stringified and encoded to a buffer or TypedArray
         const dataString = JSON.stringify(userInfo);
         const encoder = new TextEncoder();
@@ -53,6 +61,8 @@
           privateKey,
           encodedData
         );
+
+        console.log('signature: ', bufferToHex(signature));
 
         const isValid = await operations.verify(
           ALGO_OPTIONS,
