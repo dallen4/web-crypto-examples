@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Key Exporting Example</title>
+  </head>
+  <body>
+    <script type="module" async>
+      // initialize SubtleCrypto
+      let operations = window.crypto.subtle;
+
+      // Safari uses webkit prefix
+      if (!operations) operations = window.crypto.webkitSubtle;
+
+      // if webcrypto is not supported, notify the user
+      if (!operations) {
+        alert('Web Crypto is not supported on this browser');
+        console.warn('Web Crypto API not supported');
+      }
+
+      const key = await operations.generateKey(
+        { name: 'AES-GCM', length: 256 },
+        true, // setting key as extractable
+        ['encrypt', 'decrypt']
+      );
+
+      console.log(key);
+
+      const exportedKeyBuffer = await operations.exportKey('jwk', key);
+
+      console.log(exportedKeyBuffer);
+
+      const importedKey = await operations.importKey(
+        'jwk',
+        exportedKeyBuffer,
+        {
+          name: 'AES-GCM',
+          length: 256,
+        },
+        false,
+        ['encrypt', 'decrypt']
+      );
+
+      console.log(importedKey);
+
+      const encoder = new TextEncoder();
+      const passwordAsKeyData = encoder.encode('superSecretPassword');
+
+      const keyFromPassword = await operations.importKey(
+        'raw',
+        passwordAsKeyData,
+        'PBKDF2',
+        false,
+        ['deriveKey']
+      );
+
+      console.log(keyFromPassword);
+    </script>
+
+    <h1>Key Exporting Example</h1>
+    <p>see console</p>
+  </body>
+</html>

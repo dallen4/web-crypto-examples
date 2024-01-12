@@ -10,6 +10,10 @@
     "start": "http-server src/"
   },
   "devDependencies": {
+    "@types/node": "^20",
     "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

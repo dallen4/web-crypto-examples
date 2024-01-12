@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Key Derivation Example</title>
+  </head>
+  <body>
+    <script type="module" async>
+      // initialize SubtleCrypto
+      let operations = window.crypto.subtle;
+
+      // Safari uses webkit prefix
+      if (!operations) operations = window.crypto.webkitSubtle;
+
+      // if webcrypto is not supported, notify the user
+      if (!operations) {
+        alert('Web Crypto is not supported on this browser');
+        console.warn('Web Crypto API not supported');
+      }
+
+      const DERIVATION_ALGO = 'ECDH';
+
+      /* DERIVATION FROM SINGLE KEY */
+
+      const baseKey = await operations.generateKey(
+        {
+          name: DERIVATION_ALGO,
+        },
+        false,
+        ['deriveKey']
+      );
+
+      const newKey = await operations.deriveKey(
+        { name: DERIVATION_ALGO },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+
+      /* DERIVATION FROM KEY PAIR */
+
+      const ENCRYPTION_ALGO = 'AES-GCM';
+      const ENCRYPTION_PARAMS = { name: ENCRYPTION_ALGO, length: 256 };
+
+      const { publicKey, privateKey } = await operations.generateKey(
+        {
+          name: DERIVATION_ALGO,
+          namedCurve: 'P-384',
+        },
+        false,
+        ['deriveKey']
+      );
+
+      const encryptionKey = await operations.deriveKey(
+        { name: DERIVATION_ALGO, public: publicKey },
+        privateKey,
+        ENCRYPTION_PARAMS,
+        false,
+        ['encrypt']
+      );
+
+      const decryptionKey = await operations.deriveKey(
+        { name: DERIVATION_ALGO, public: publicKey },
+        privateKey,
+        ENCRYPTION_PARAMS,
+        false,
+        ['decrypt']
+      );
+
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+
+      const iv = encoder.encode(window.crypto.randomUUID());
+
+      const algoConfig = {
+        name: ENCRYPTION_ALGO,
+        iv,
+      };
+
+      const data = encoder.encode('hello there');
+
+      const encrypted = await operations.encrypt(
+        algoConfig,
+        encryptionKey,
+        data
+      );
+
+      console.log(encrypted);
+
+      const decrypted = await operations.decrypt(
+        algoConfig,
+        decryptionKey,
+        encrypted
+      );
+
+      console.log(decoder.decode(decrypted));
+    </script>
+
+    <h1>Key Derivation Example</h1>
+    <p>see console</p>
+  </body>
+</html>
