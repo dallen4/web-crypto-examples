@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Key Generation Example</title>
+  </head>
+  <body>
+    <script type="module" async>
+      // initialize SubtleCrypto
+      let operations = window.crypto.subtle;
+
+      // Safari uses webkit prefix
+      if (!operations) operations = window.crypto.webkitSubtle;
+
+      // if webcrypto is not supported, notify the user
+      if (!operations) {
+        alert('Web Crypto is not supported on this browser');
+        console.warn('Web Crypto API not supported');
+      }
+
+      const key = await operations.generateKey(
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+
+      console.log(key);
+
+      const { publicKey, privateKey } = await operations.generateKey(
+        {
+          name: 'RSA-OAEP',
+          modulusLength: 2048,
+          publicExponent: new Uint8Array([1, 0, 1]),
+          hash: 'SHA-384',
+        },
+        false,
+        ['encrypt', 'decrypt']
+      );
+
+      console.log('public key: ', publicKey);
+      console.log('private key: ', privateKey);
+    </script>
+
+    <h1>Key Generation Example</h1>
+    <p>see console</p>
+  </body>
+</html>

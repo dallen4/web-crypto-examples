@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Key Wrapping Example</title>
+  </head>
+  <body>
+    <script type="module" async>
+      // initialize SubtleCrypto
+      let operations = window.crypto.subtle;
+
+      // Safari uses webkit prefix
+      if (!operations) operations = window.crypto.webkitSubtle;
+
+      // if webcrypto is not supported, notify the user
+      if (!operations) {
+        alert('Web Crypto is not supported on this browser');
+        console.warn('Web Crypto API not supported');
+      }
+
+      const KEY_LEN = 256;
+
+      const ENCRYPTION_ALGO = 'AES-GCM';
+      const ENCRYPTION_USAGES = ['encrypt', 'decrypt'];
+
+      const WRAPPING_ALGO = 'AES-KW';
+      const WRAPPING_USAGES = ['wrapKey', 'unwrapKey'];
+
+      const key = await operations.generateKey(
+        { name: ENCRYPTION_ALGO, length: KEY_LEN },
+        true,
+        ENCRYPTION_USAGES
+      );
+
+      const wrappingKey = await operations.generateKey(
+        { name: WRAPPING_ALGO, length: KEY_LEN },
+        true,
+        WRAPPING_USAGES
+      );
+
+      const wrappedKeyBuffer = await operations.wrapKey(
+        'raw',
+        key,
+        wrappingKey,
+        WRAPPING_ALGO
+      );
+
+      // ArrayBuffer safe for transport and storage
+      console.log(wrappedKeyBuffer);
+
+      const unwrappedKey = await operations.unwrapKey(
+        'raw',
+        wrappedKeyBuffer,
+        wrappingKey,
+        WRAPPING_ALGO,
+        ENCRYPTION_ALGO,
+        true,
+        ENCRYPTION_USAGES
+      );
+
+      console.log(unwrappedKey);
+    </script>
+
+    <h1>Key Wrapping Example</h1>
+    <p>see console</p>
+  </body>
+</html>
